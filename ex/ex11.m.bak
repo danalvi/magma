@@ -1,0 +1,57 @@
+function MyMersenne(p)
+	s := 4;
+	M := 2^(p) - 1;
+       	for i := 1 to (p - 2) do
+		s := ((s ^ 2) - 2) mod M;
+	end for;
+	if (s eq 0) then
+		return true;
+	else
+		return false;
+	end if;
+end function;
+
+// It is important we use some sort of a "dynamic Sieving mechanism" which ensures that our values are stored when we want to find the next Mersenne Prime
+// Using the theorem that if a Mersenne Number 2^p - 1 is prime, then p must be prime, so searching for prime numbers will optimise the search process
+
+function MersennePrimes(n)
+	bin := []; // As same from the Binary Sieve
+	seq := [2,3,5,7]; p_n := 4; // Start with some initial numbers, first four, where i is the counter of the number of first n primes found
+	M := [ (2^x - 1) : x in seq]; // Mersenne Primes to be sought
+	index := 0; sum := 0;
+	primes := [];
+	while (p_n ne n) do
+		p_i := Round(p_n * Log(p_n * Log(p_n)) + 1); // Previous bound
+		p_k := Round((p_n + 1) * Log((p_n + 1) * Log(p_n + 1)) + 1); //  Next Bound
+		seq := seq cat [x : x in [p_i + 2 .. p_k] | (x mod 10 eq 1) or (x mod 10 eq 3) or (x mod 10 eq 7) or (x mod 10 eq 9) ];
+		bin_len := #bin;
+		seq_len := #seq;
+		while (bin_len ne seq_len) do
+			bin := bin cat [1];
+			bin_len +:= 1;
+		end while;
+		for i := 1 to #seq do
+			multiples := [x : x in seq | x mod seq[i] eq 0 and (not x eq seq[i])];
+			indices := [x : x in [1 .. #seq] | seq[x] in multiples];
+			for j in indices do
+				bin[j] := 0;
+			end for;
+		end for;
+		p := 0;
+		for i := index + 1 to #seq do
+			sum +:=  bin[i];
+			index := i;
+			if sum eq (p_n) then
+				p := seq[i];
+				primes := primes cat [p];
+				break;
+			end if; 
+		end for;
+		//print(p);;
+		//if (MyMersenne(p)) then
+		//	M := M cat [(2^p - 1)];
+		//end if;
+		p_n +:= 1;
+	end while;	
+	return primes;
+end function;
