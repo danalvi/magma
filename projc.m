@@ -51,20 +51,25 @@ function psc(F, G, j, var)
         		Append(~seq, [0] cat Remove(seq[#seq], #seq[#seq])); 
 		end if;
 	end for;
-	print seq;
 	A := Matrix(seq);
-	print A;
-	if ( j ne 0 ) then
-		for i := 1 to j do
+	print "Printing A\n"; print A;
+	if ( j gt 0 ) then
+		for i := 0 to (j - 1) do
 			RemoveRow(~A, m - i);
 		end for;
-		for i := 1 to j do
-			RemoveRow(~A, m + n - i ); // m + n because that is the dimension of A. - j as we have removed j rows from the previous four. + 1 due to the same reason, i is counter
+		for i := 0 to (j - 1) do
+			RemoveRow(~A, m + n - j - i ); // m + n because that is the dimension of A. - j as we have removed j rows from the previous four. + 1 due to the same reason, i is counter
 		end for;
+		print "Printing A after row removals\n";
+		print A;
 		v := ExtractBlock(A, 1, m + n - 2*j, m + n - 2*j, 1);; // Saving the column m + n - i - j (here, i = j as we are considering M_{j,j} )
+		print "Printing v\n";
+		print v;
 		M := ZeroMatrix(BaseRing(A), m + n - 2*j, m + n - 2*j); // Initialise new matrix
 		InsertBlock(~M, ExtractBlock(A, 1, 1, m + n - 2*j, m + n - 2*j - 1 ), 1, 1);
 		InsertBlock(~M, v, 1, m + n - 2*j );
+		print "Printing M\n";
+		print M;
 		return Determinant(M);
 	else
 		return Determinant(A);
@@ -72,7 +77,8 @@ function psc(F, G, j, var)
 end function;
 
 //psc(A1, Derivative(A1, 2), 1, 2); 
-psc(A2, Derivative(A2, 2), 1, 2);
+//psc(A2, Derivative(A2, 2), 1, 2);
+psc(A1, A2, 1, 2);
 
 function PROJH(A)
 
