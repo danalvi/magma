@@ -9,6 +9,8 @@ N := 2; P<[X]> := PolynomialRing(RealField(10), N);
 A1 := 144*(X[2])^2 + 96*(X[1]^2)*(X[2]) + 9*(X[1])^4 + 105*(X[1])^2 + 70*(X[1]) - 98;
 A2 := (X[1])*(X[2])^2 +6*(X[1])*(X[2]) + (X[1])^3 + 9*(X[1]);
 
+// A := { A1, A2 };
+
 // F := (X[2]^2 + X[1]^1 - 1)*(X[3]^3) + (X[1] - 1)*((X[3])^2) + (X[1] - 1)^2 + (X[2])^2;
 
 function red(F, k, var)
@@ -52,7 +54,7 @@ function psc(F, G, j, var)
 		end if;
 	end for;
 	A := Matrix(seq);
-	print "Printing A\n"; print A;
+	// print "Printing A\n"; print A;
 	if ( j gt 0 ) then
 		for i := 0 to (j - 1) do
 			RemoveRow(~A, m - i);
@@ -60,26 +62,54 @@ function psc(F, G, j, var)
 		for i := 0 to (j - 1) do
 			RemoveRow(~A, m + n - j - i ); // m + n because that is the dimension of A. - j as we have removed j rows from the previous four. + 1 due to the same reason, i is counter
 		end for;
-		print "Printing A after row removals\n";
-		print A;
+		// print "Printing A after row removals\n"; print A;
 		v := ExtractBlock(A, 1, m + n - 2*j, m + n - 2*j, 1);; // Saving the column m + n - i - j (here, i = j as we are considering M_{j,j} )
-		print "Printing v\n";
-		print v;
+		// print "Printing v\n"; print v;
 		M := ZeroMatrix(BaseRing(A), m + n - 2*j, m + n - 2*j); // Initialise new matrix
 		InsertBlock(~M, ExtractBlock(A, 1, 1, m + n - 2*j, m + n - 2*j - 1 ), 1, 1);
 		InsertBlock(~M, v, 1, m + n - 2*j );
-		print "Printing M\n";
-		print M;
+		print "Printing M\n"; print M;
 		return Determinant(M);
 	else
 		return Determinant(A);
 	end if;
 end function;
 
+function PSC(F, G, var) // Collins 1993 p 143 - 144
+	n := Min(Degree(F, var), Degree(G, var));
+        if ( (F eq 0) or (G eq 0) ) then
+		return { };
+	end if;
+	return { psc(F, G, j, var) : j in [ 0 .. n ] | psc(F, G, j, var) ne 0  };
+end function;
+
 //psc(A1, Derivative(A1, 2), 1, 2); 
 //psc(A2, Derivative(A2, 2), 1, 2);
 psc(A1, A2, 1, 2);
 
-function PROJH(A)
+// Implemented just as defined by Collins 1993 p 144
 
+function PROJH(A, var) // A must be indexed set of polynomials!!
+	PROJ1 := { };
+	for i := 1 to #A do
+	  	R_i := RED(A[i], var); 
+		for G_i in R_i do
+			X := {LeadingCoefficient(G_i, var)} join PSC(G_i, Derivative(G_i, var), var);
+			PROJ1 := PROJ1 join X;
+		end for;
+	end for;
+	// This is terribly ugly, will think on a better implemenation
+	PROJ2 := {};
+	for i := 1 to (#A - 1)  do
+		for j := i + 1 to #A do
+			print i; print " , "; print j; print "\n";
+			R_i := RED(A[i], var); R_j := RED(A[j], var);
+			for G_i in R_i do
+				for G_j in R_j do
+					PROJ2 := PROJ2 join PSC(G_i, G_j, var);
+				end for; // gosh ...
+			end for;
+		end for;
+	end for;
+	return PROJ1 join PROJ2;
 end function;
