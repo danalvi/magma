@@ -55,7 +55,7 @@ function psc(F, G, j, var)
 	end for;
 	A := Matrix(seq);
 	//print "Printing A\n"; print A;
-	if ( j gt 0 ) then
+	if ( ( j gt 0 ) and (j lt n) ) then // Added new condition
 		for i := 0 to (j - 1) do
 			RemoveRow(~A, m - i);
 		end for;
@@ -63,7 +63,7 @@ function psc(F, G, j, var)
 			RemoveRow(~A, m + n - j - i ); // m + n because that is the dimension of A. - j as we have removed j rows from the previous four. + 1 due to the same reason, i is counter
 		end for;
 		//print "Printing A after row removals\n"; print A;
-		v := ExtractBlock(A, 1, m + n - 2*j, m + n - 2*j, 1);; // Saving the column m + n - i - j (here, i = j as we are considering M_{j,j} )
+		v := ExtractBlock(A, 1, m + n - 2*j, m + n - 2*j, 1); // Saving the column m + n - i - j (here, i = j as we are considering M_{j,j} )
 		//print "Printing v\n"; print v;
 		M := ZeroMatrix(BaseRing(A), m + n - 2*j, m + n - 2*j); // Initialise new matrix
 		InsertBlock(~M, ExtractBlock(A, 1, 1, m + n - 2*j, m + n - 2*j - 1 ), 1, 1);
@@ -71,7 +71,7 @@ function psc(F, G, j, var)
 		//print "Printing M\n"; print M;
 		return Determinant(M);
 	else
-		return Determinant(A);
+		return Determinant(A); // This part may or definitely is wrong
 	end if;
 end function;
 
@@ -102,7 +102,7 @@ function PROJH(A, var) // A must be indexed set of polynomials!!
 	PROJ2 := {};
 	for i := 1 to (#A - 1)  do
 		for j := i + 1 to #A do
-			print i; print " , "; print j; print "\n";
+			// print i; print " , "; print j; print "\n";
 			R_i := RED(A[i], var); R_j := RED(A[j], var);
 			U := {@ <x,y> : x in R_i, y in R_j @};
 			for i := 1 to #U do
