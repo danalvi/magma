@@ -98,17 +98,32 @@ function PROJH(A, var) // A must be indexed set of polynomials!!
 			PROJ1 := PROJ1 join U;
 		end for;
 	end for;
-	// This is better !
-	PROJ2 := {};
-	for i := 1 to (#A - 1)  do
+
+	// The comment portion below is the original PROJ2 . We now are implementing the "improved" PROJ2 as mentioned on Collins 1993 p 168 2.2
+	//PROJ2 := {};
+	//for i := 1 to (#A - 1)  do
+	//	for j := i + 1 to #A do
+	//		// print i; print " , "; print j; print "\n";
+	//		R_i := RED(A[i], var); R_j := RED(A[j], var);
+	//		U := {@ <x,y> : x in R_i, y in R_j @};
+	//		for i := 1 to #U do
+	//			PROJ2 := PROJ2 join PSC(U[i][1], U[i][2], var);
+	//		end for;
+	//	end for;
+	//end for;
+	
+	// Improved PROJ2 Collins 1993 p 168 2.2
+	// The linear ordering is aribtary, so we will simply take the ascending ordering of indices on the (indexed) set A
+	
+	PROJ2 := { };
+	for i := 1 to (#A - 1) do
 		for j := i + 1 to #A do
-			// print i; print " , "; print j; print "\n";
-			R_i := RED(A[i], var); R_j := RED(A[j], var);
-			U := {@ <x,y> : x in R_i, y in R_j @};
-			for i := 1 to #U do
-				PROJ2 := PROJ2 join PSC(U[i][1], U[i][2], var);
+	       		F := A[i]; G := A[j];
+			RED_F := RED(F, var);
+			for F_star in RED_F do
+				PROJ2 := PROJ2 join PSC(F_star, G, var);
 			end for;
-		end for;
+		end for;	
 	end for;
 	return PROJ1 join PROJ2;
 end function;
