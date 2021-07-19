@@ -6,7 +6,7 @@
 
 N := 2; P<[X]> := PolynomialRing(RealField(10), N);
 
-A1 := 144*(X[2])^2 + 96*(X[1]^2)*(X[2]) + 9*(X[1])^4 + 105*(X[1])^2 + 70*(X[1]) - 98; // Example on pg. 148 Collins
+A1 := 144*(X[2])^2 + 96*(X[1]^2)*(X[2]) + 9*(X[1])^4 + 105*(X[1])^2 + 70*(X[1]) - 98;
 A2 := (X[1])*(X[2])^2 +6*(X[1])*(X[2]) + (X[1])^3 + 9*(X[1]);
 
 // A := { A1, A2 };
@@ -146,12 +146,12 @@ function NumberOfSignChanges(polyInBounds) // Using Mobius Transformation to det
 end function;
 
 function RootIsolation(p, lowerBound, upperBound, e)
-	middleValue := (upperBound - lowerBound) / 2;
+	middleValue := (upperBound + lowerBound) / 2;
 	polyInBounds := <p, lowerBound, upperBound>;
 	if NumberOfSignChanges(polyInBounds) eq 0 then
 		return [];
 	end if;
-	if (NumberOfSignChanges(polyInBounds) eq 1 ) and (upperBound - lowerBound lt e)  then
+	if (NumberOfSignChanges(polyInBounds) eq 1 ) and (upperBound - lowerBound le e)  then
 		return [<lowerBound, upperBound>];
 	end if;
 	if (Evaluate(p, [middleValue]) eq 0) then
