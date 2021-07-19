@@ -33,12 +33,12 @@ function psc(F, G, j, var)
 		if (i eq 1) then
 			if (n ne 0) then
 				Append(~seq, Coefficients_F cat [0 : x in [1 .. n - 1 ] ] );
-			else 
+			else
 				Append(~seq, Coefficients_F );
 			end if;
 		else
 			//Append(~seq, [0 : x in [1 .. i ] ] cat Coefficients_F cat [0 : x in [1 .. n - i - 1 ] ] );
-			Append(~seq, [0] cat Remove(seq[#seq], #seq[#seq])); 
+			Append(~seq, [0] cat Remove(seq[#seq], #seq[#seq]));
 		end if;
 	end for;
 	for i := 1 to m do
@@ -50,7 +50,7 @@ function psc(F, G, j, var)
 			end if;
 		else
                 	//Append(~seq, [0 : x in [1 .. i  ] ] cat Coefficients_G cat [0 : x in [1 .. m - i - 1] ] );
-        		Append(~seq, [0] cat Remove(seq[#seq], #seq[#seq])); 
+        		Append(~seq, [0] cat Remove(seq[#seq], #seq[#seq]));
 		end if;
 	end for;
 	A := Matrix(seq);
@@ -83,7 +83,7 @@ function PSC(F, G, var) // Collins 1993 p 143 - 144
 	return { psc(F, G, j, var) : j in [ 0 .. n ] | psc(F, G, j, var) ne 0  };
 end function;
 
-//psc(A1, Derivative(A1, 2), 1, 2); 
+//psc(A1, Derivative(A1, 2), 1, 2);
 //psc(A2, Derivative(A2, 2), 1, 2);
 //psc(A1, A2, 1, 2);
 
@@ -92,7 +92,7 @@ end function;
 function PROJH(A, var) // A must be indexed set of polynomials!!
 	PROJ1 := { };
 	for i := 1 to #A do
-	  	R_i := RED(A[i], var); 
+	  	R_i := RED(A[i], var);
 		for G_i in R_i do
 			U := {LeadingCoefficient(G_i, var)} join PSC(G_i, Derivative(G_i, var), var);
 			PROJ1 := PROJ1 join U;
@@ -111,10 +111,10 @@ function PROJH(A, var) // A must be indexed set of polynomials!!
 	//		end for;
 	//	end for;
 	//end for;
-	
+
 	// Improved PROJ2 Collins 1993 p 168 2.2
 	// The linear ordering is aribtary, so we will simply take the ascending ordering of indices on the (indexed) set A
-	
+
 	PROJ2 := { };
 	for i := 1 to (#A - 1) do
 		for j := i + 1 to #A do
@@ -123,7 +123,46 @@ function PROJH(A, var) // A must be indexed set of polynomials!!
 			for F_star in RED_F do
 				PROJ2 := PROJ2 join PSC(F_star, G, var);
 			end for;
-		end for;	
+		end for;
 	end for;
 	return PROJ1 join PROJ2;
 end function;
+
+function NumberOfSignChanges(polyInBounds) // Using Mobius Transformation to determine sign changes within an interval. Much better than Sturm Sequences
+  f := polyInBounds[1]; lowerBound := polyInBounds[2]; upperBound := polyInBounds[3];
+  g := (lowerBound * X[1] + upperBound);
+  p := 0; T := Terms(f); n := Degree(f);
+  for i := 1 to #T do
+		h := Evaluate(T[i], [g]);
+    p +:= ((X[1] + 1)^(n - Degree(T[i])))*h;
+  end for;
+  C := Coefficients(p); count := 0;
+  for i := 1 to (#C - 1) do
+    if C[i] * C[i+1] le 0 then
+      count +:= 1;
+    end if;
+  end for;
+	return count;
+end function;
+
+function RootIsolation(p, lowerBound, upperBound, e)
+	middleValue := (upperBound - lowerBound) / 2;
+	polyInBounds := <p, lowerBound, upperBound>;
+	if NumberOfSignChanges(polyInBounds) eq 0 then
+		return [];
+	end if;
+	if (NumberOfSignChanges(polyInBounds) eq 1 ) and (upperBound - lowerBound lt e)  then
+		return [<lowerBound, upperBound>];
+	end if;
+	if (Evaluate(p, [middleValue]) eq 0) then
+		return [<middleValue, middleValue>];
+	end if;
+	return RootIsolation(p, lowerBound, middleValue, e) cat RootIsolation(p, middleValue, upperBound, e);
+end function;
+
+// A := {@ A1, A2 @}; PROJH(A, 2);
+
+P<[X]> := PolynomialRing(RealField(10), 1);
+p := (X[1] - 1)*(X[1] - 2)*(X[1] - 3)*(X[1] - 4)*(X[1] - 5);
+//NumberOfSignChanges(<p, (1/2), (7/2)>);
+//RootIsolation(p, 1/2, 6, 1/5);
